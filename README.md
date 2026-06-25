@@ -33,7 +33,8 @@ Dazu müssen nur folgende Dinge angepasst werden:
 
 ```text
 .
-├── config.php
+├── .gitignore
+├── config.example.php
 ├── index.php
 ├── auth.php
 ├── lock-control.php
@@ -51,7 +52,12 @@ Dazu müssen nur folgende Dinge angepasst werden:
 - Eine Nuki Smart Lock ID
 - Webserver / Hosting mit PHP-Unterstützung
 
-## Konfiguration
+## Einrichtung
+
+1. Repository auschecken
+2. `config.example.php` nach `config.php` kopieren
+3. In `config.php` die Platzhalter ersetzen
+4. Die App auf dem Webserver bereitstellen
 
 In `config.php` die Platzhalter ersetzen:
 
@@ -130,7 +136,7 @@ Zum Troubleshooting kann es temporär aktiviert werden. Danach sollte es wieder 
 
 Dieses Repository enthält keine echten Secrets.
 
-Bitte niemals produktive Tokens, OAuth-Secrets oder echte Gruppen-IDs in ein öffentliches Repository committen.
+Die Datei `config.php` sollte nicht ins Repository committed werden. Dafür gibt es die Vorlage `config.example.php`.
 
 ## Lizenz
 
