@@ -30,19 +30,6 @@ define('DEBUG_ROLES_ENABLED', false);
 
 session_start();
 
-/**
- * Lesbare Zugriffskonfiguration.
- *
- * Ziel:
- * - Eine Pfadi-Abteilung trägt ihre Layer-/Abteilungs-ID ein.
- * - optional können erlaubte Rollen angepasst werden.
- * - optional können Untergruppen deaktiviert werden.
- *
- * Hinweise:
- * - layer_group_id: ID der Abteilung / des Layers in Hitobito / MiData
- * - allowed_roles: leeres Array = alle Rollen innerhalb der passenden Gruppe erlauben
- * - include_subgroups: true = Rollen in Untergruppen der Abteilung ebenfalls erlauben
- */
 function getAccessRules() {
     return [
         [
@@ -256,9 +243,14 @@ function roleMatchesGroupRule($role, $rule) {
 }
 
 function getMatchingAccessEntries() {
+    if (isset($_SESSION['matched_access_entries']) && is_array($_SESSION['matched_access_entries'])) {
+        return $_SESSION['matched_access_entries'];
+    }
+
     clearPermissionCache();
 
     if (!isLoggedIn()) {
+        $_SESSION['matched_access_entries'] = [];
         return [];
     }
 
@@ -268,6 +260,8 @@ function getMatchingAccessEntries() {
     $matches = [];
 
     if (empty($roles) || !is_array($roles) || empty($rules) || !is_array($rules)) {
+        $_SESSION['matched_access_entries'] = [];
+        $_SESSION['matched_access_roles'] = [];
         return [];
     }
 
@@ -289,22 +283,23 @@ function getMatchingAccessEntries() {
         }
     }
 
+    $_SESSION['matched_access_entries'] = $matches;
+    $_SESSION['matched_access_roles'] = array_map(function ($match) {
+        return [
+            'role_name' => $match['role']['role_name'] ?? 'Mitglied',
+            'group_name' => $match['role']['group_name'] ?? 'Gruppe',
+            'group_id' => $match['role']['group_id'] ?? null,
+            'rule_name' => $match['rule']['name'] ?? null,
+            'layer_group_id' => $match['rule']['layer_group_id'] ?? null,
+        ];
+    }, $matches);
+
     if (!empty($matches)) {
         $primaryMatch = $matches[0];
         $_SESSION['user_role'] = ($primaryMatch['role']['role_name'] ?? '') !== '' ? $primaryMatch['role']['role_name'] : 'Mitglied';
         $_SESSION['user_group'] = $primaryMatch['role']['group_name'] ?? 'Gruppe';
         $_SESSION['matched_access_rule'] = $primaryMatch['rule'];
         $_SESSION['matched_access_role'] = $primaryMatch['role'];
-        $_SESSION['matched_access_entries'] = $matches;
-        $_SESSION['matched_access_roles'] = array_map(function ($match) {
-            return [
-                'role_name' => $match['role']['role_name'] ?? 'Mitglied',
-                'group_name' => $match['role']['group_name'] ?? 'Gruppe',
-                'group_id' => $match['role']['group_id'] ?? null,
-                'rule_name' => $match['rule']['name'] ?? null,
-                'layer_group_id' => $match['rule']['layer_group_id'] ?? null,
-            ];
-        }, $matches);
     }
 
     return $matches;
@@ -328,8 +323,12 @@ function isDebugRolesEnabled() {
 }
 
 function getMatchedAccessRoles() {
-    getMatchingAccessEntries();
-    $matchedRoles = $_SESSION['matched_access_roles'] ?? [];
+    $matchedRoles = $_SESSION['matched_access_roles'] ?? null;
+    if (!is_array($matchedRoles)) {
+        getMatchingAccessEntries();
+        $matchedRoles = $_SESSION['matched_access_roles'] ?? [];
+    }
+
     return is_array($matchedRoles) ? $matchedRoles : [];
 }
 
