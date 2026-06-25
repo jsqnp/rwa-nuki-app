@@ -5,8 +5,7 @@ $isLoggedIn = isLoggedIn();
 $hasPermission = hasPermission();
 $userName = $_SESSION['user_name'] ?? 'User';
 $userEmail = $_SESSION['user_email'] ?? '';
-$userRole = $_SESSION['user_role'] ?? 'Mitglied';
-$userGroup = $_SESSION['user_group'] ?? 'Gruppe';
+$userScoutName = trim((string)($_SESSION['user_info']['nickname'] ?? $_SESSION['user_info']['scout_name'] ?? ''));
 $matchedRoles = getMatchedAccessRoles();
 $appVersion = '2026';
 $appAuthor = 'Woody';
@@ -59,12 +58,6 @@ $appAuthor = 'Woody';
             font-size: 14px;
         }
 
-        .subtitle {
-            color: #999;
-            font-size: 12px;
-            margin-top: 6px;
-        }
-
         .user-info {
             background: #f5f5f5;
             padding: 15px;
@@ -78,6 +71,13 @@ $appAuthor = 'Woody';
             color: #555;
         }
 
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
         .badge {
             background: #4CAF50;
             color: white;
@@ -86,17 +86,6 @@ $appAuthor = 'Woody';
             font-size: 12px;
             font-weight: 600;
             display: inline-block;
-            margin-top: 8px;
-        }
-
-        .matched-roles {
-            margin-top: 12px;
-            padding-left: 18px;
-            color: #555;
-        }
-
-        .matched-roles li {
-            margin: 4px 0;
         }
 
         .button-group {
@@ -246,7 +235,6 @@ $appAuthor = 'Woody';
         <div class="header">
             <h1>🔐 Nuki Lock Control</h1>
             <p>Schloss-Verwaltung für Pfadi-Abteilungen</p>
-            <p class="subtitle">MiData OAuth2</p>
         </div>
 
         <?php if (!$isLoggedIn): ?>
@@ -261,24 +249,21 @@ $appAuthor = 'Woody';
         <?php else: ?>
             <div class="user-info">
                 <p><strong>👤 Benutzer:</strong> <?php echo e($userName); ?></p>
+
+                <?php if ($userScoutName !== ''): ?>
+                    <p><strong>⚜️ Pfadiname:</strong> <?php echo e($userScoutName); ?></p>
+                <?php endif; ?>
+
                 <p><strong>📧 Email:</strong> <?php echo e($userEmail); ?></p>
 
-                <?php if ($hasPermission): ?>
-                    <span class="badge">
-                        ✓ <?php echo e($userRole); ?> in <?php echo e($userGroup); ?>
-                    </span>
-
-                    <?php if (count($matchedRoles) > 1): ?>
-                        <ul class="matched-roles">
-                            <?php foreach ($matchedRoles as $matchedRole): ?>
-                                <li>
-                                    <?php echo e($matchedRole['role_name'] ?? 'Mitglied'); ?>
-                                    in
-                                    <?php echo e($matchedRole['group_name'] ?? 'Gruppe'); ?>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
+                <?php if ($hasPermission && !empty($matchedRoles)): ?>
+                    <div class="badge-list">
+                        <?php foreach ($matchedRoles as $matchedRole): ?>
+                            <span class="badge">
+                                ✓ <?php echo e($matchedRole['role_name'] ?? 'Mitglied'); ?> in <?php echo e($matchedRole['group_name'] ?? 'Gruppe'); ?>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endif; ?>
             </div>
 
