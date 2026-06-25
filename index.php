@@ -36,7 +36,7 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             padding: 40px;
-            max-width: 520px;
+            max-width: 700px;
             width: 100%;
         }
 
@@ -136,13 +136,15 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
             margin-top: 20px;
         }
 
-        .logout-link a {
+        .logout-link a,
+        .debug-link {
             color: #667eea;
             text-decoration: none;
             font-size: 14px;
         }
 
-        .logout-link a:hover {
+        .logout-link a:hover,
+        .debug-link:hover {
             text-decoration: underline;
         }
 
@@ -208,6 +210,15 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
             color: #777;
             text-align: center;
         }
+
+        .debug-box {
+            margin-top: 16px;
+            padding: 12px;
+            background: #fafafa;
+            border: 1px dashed #bbb;
+            border-radius: 8px;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
@@ -242,8 +253,7 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
             <?php if (!$hasPermission): ?>
                 <div class="error">
                     ⛔ <strong>Keine Berechtigung</strong><br>
-                    Du bist nicht in der erforderlichen Gruppe eingetragen.<br><br>
-                    <small>Erforderlich: Chutze Pfadi (Group ID 506)</small>
+                    Keine passende Rolle für die konfigurierte Layer-Regel gefunden.
                 </div>
             <?php else: ?>
                 <div class="info">
@@ -262,6 +272,12 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
 
                 <div class="small-note">
                     Es wird kein Live-Status vom Schloss angezeigt.
+                </div>
+            <?php endif; ?>
+
+            <?php if (isDebugRolesEnabled()): ?>
+                <div class="debug-box">
+                    🧪 Debug aktiv – <a class="debug-link" href="debug-roles.php">Rollen-Debug öffnen</a>
                 </div>
             <?php endif; ?>
 

@@ -13,14 +13,39 @@ define('REDIRECT_URI', 'https://rwa.chutze.ch/auth/midata');
 define('NUKI_API_TOKEN', 'DEIN_NUKI_API_TOKEN');
 define('NUKI_LOCK_ID', 'DEINE_NUKI_LOCK_ID');
 
+// Debug-Ausgabe für Rollen aktivieren/deaktivieren
+define('DEBUG_ROLES_ENABLED', true);
+
 session_start();
 
 function getAccessRules() {
     return [
         [
-            'group_id' => 506,
-            'allowed_roles' => [],
-            'include_subgroups' => false,
+            'group_id' => 375,
+            'allowed_roles' => [
+                'Einheitsleiter*in',
+                'Mitleiter*in',
+                'Adressverwalter*in',
+                'Abteilungsleiter*in',
+                'Abteilungsleiter*in Stv',
+                'Sekretariat',
+                'PowerUser',
+                'Präsident*in',
+                'Vize Präsident*in',
+                'Präsident*in APV',
+                'Präsident*in Elternrat',
+                'Materialwart*in',
+                'Heimverwalter*in',
+                'Stufenleiter*in Biber',
+                'Stufenleiter*in Wölfe',
+                'Stufenleiter*in Pfadi',
+                'Stufenleiter*in Pio',
+                'Stufenleiter*in Rover',
+                'Stufenleiter*in PTA',
+                'Kassier*in',
+                'Rechnungen',
+            ],
+            'include_subgroups' => true,
         ],
     ];
 }
@@ -35,7 +60,12 @@ function isLoggedIn() {
 }
 
 function clearPermissionCache() {
-    unset($_SESSION['user_role'], $_SESSION['user_group'], $_SESSION['matched_access_rule']);
+    unset(
+        $_SESSION['user_role'],
+        $_SESSION['user_group'],
+        $_SESSION['matched_access_rule'],
+        $_SESSION['matched_access_role']
+    );
 }
 
 function normalizeRoleName($roleName) {
@@ -112,6 +142,7 @@ function getMatchingAccessEntry() {
             $_SESSION['user_role'] = $roleName !== '' ? $roleName : 'Mitglied';
             $_SESSION['user_group'] = $role['group_name'] ?? 'Gruppe';
             $_SESSION['matched_access_rule'] = $rule;
+            $_SESSION['matched_access_role'] = $role;
 
             return [
                 'role' => $role,
@@ -129,6 +160,23 @@ function isInAllowedGroup() {
 
 function hasPermission() {
     return isInAllowedGroup();
+}
+
+function isDebugRolesEnabled() {
+    return defined('DEBUG_ROLES_ENABLED') && DEBUG_ROLES_ENABLED;
+}
+
+function getRoleDebugData() {
+    $roles = $_SESSION['user_info']['roles'] ?? [];
+
+    return [
+        'logged_in' => isLoggedIn(),
+        'has_permission' => hasPermission(),
+        'access_rules' => getAccessRules(),
+        'matched_access_rule' => $_SESSION['matched_access_rule'] ?? null,
+        'matched_access_role' => $_SESSION['matched_access_role'] ?? null,
+        'roles' => is_array($roles) ? $roles : [],
+    ];
 }
 
 function e($value) {
