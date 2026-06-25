@@ -148,7 +148,6 @@ function getGroupHierarchyData($groupId) {
     $headers = [
         'Authorization: Bearer ' . $accessToken,
         'Accept: application/json',
-        'X-Scope: with_roles',
         'X-Scope: groups',
     ];
 

@@ -56,8 +56,7 @@ $userInfoUrl = HITOBITO_BASE_URL . '/oauth/profile';
 $headers = [
     'Authorization: Bearer ' . $accessToken,
     'Accept: application/json',
-    'X-Scope: with_roles',
-    'X-Scope: groups'
+    'X-Scope: with_roles'
 ];
 
 $ch = curl_init();
