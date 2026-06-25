@@ -1,10 +1,10 @@
 # RWA Nuki Control
 
-Eine kleine PHP-Webanwendung für Pfadi-Abteilungen, die ein Nuki-Schloss über MiData / Hitobito absichern möchten.
+Eine kleine PHP-Webanwendung für Pfadi-Abteilungen, die ein Nuki-Schloss über MiData absichern möchten.
 
 Die App erlaubt:
 
-- Login über MiData / Hitobito OAuth2
+- Login über MiData OAuth2
 - Berechtigungsprüfung über Rollen in einer konfigurierten Pfadi-Abteilung
 - Prüfung von Untergruppen über die echte Hitobito-Gruppenhierarchie
 - Öffnen und Schliessen eines Nuki Smart Locks
@@ -22,7 +22,7 @@ Dazu müssen nur folgende Dinge angepasst werden:
 
 ## Funktionen
 
-- Login über MiData / Hitobito OAuth2
+- Login über MiData OAuth2
 - Rollenprüfung via `with_roles`
 - Hierarchieprüfung via `groups`
 - Unterstützung für Untergruppen einer Abteilung
@@ -34,6 +34,7 @@ Dazu müssen nur folgende Dinge angepasst werden:
 ```text
 .
 ├── .gitignore
+├── LICENSE
 ├── config.example.php
 ├── index.php
 ├── auth.php
@@ -47,7 +48,7 @@ Dazu müssen nur folgende Dinge angepasst werden:
 ## Voraussetzungen
 
 - PHP mit aktivierter cURL-Erweiterung
-- Ein MiData / Hitobito OAuth2 Client
+- Ein MiData OAuth2 Client
 - Ein Nuki Web API Token
 - Eine Nuki Smart Lock ID
 - Webserver / Hosting mit PHP-Unterstützung
@@ -132,6 +133,19 @@ define('DEBUG_ROLES_ENABLED', false);
 
 Zum Troubleshooting kann es temporär aktiviert werden. Danach sollte es wieder deaktiviert werden.
 
+## Checkliste für neue Pfadi-Abteilungen
+
+- `config.example.php` nach `config.php` kopieren
+- MiData OAuth2 Client erstellen oder bestehende Zugangsdaten eintragen
+- `REDIRECT_URI` auf die eigene URL setzen
+- `YOUR_NUKI_API_TOKEN` eintragen
+- `YOUR_NUKI_LOCK_ID` eintragen
+- richtige `layer_group_id` der Abteilung eintragen
+- bei Bedarf `allowed_roles` anpassen
+- Testlogin mit einer berechtigten Rolle durchführen
+- Testlogin mit einer nicht berechtigten Rolle durchführen
+- `DEBUG_ROLES_ENABLED` nach dem Test wieder auf `false` setzen
+
 ## Sicherheitshinweis
 
 Dieses Repository enthält keine echten Secrets.
@@ -140,4 +154,4 @@ Die Datei `config.php` sollte nicht ins Repository committed werden. Dafür gibt
 
 ## Lizenz
 
-Keine Lizenz definiert.
+MIT License. Siehe `LICENSE`.

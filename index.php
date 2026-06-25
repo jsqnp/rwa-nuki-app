@@ -7,6 +7,8 @@ $userName = $_SESSION['user_name'] ?? 'User';
 $userEmail = $_SESSION['user_email'] ?? '';
 $userRole = $_SESSION['user_role'] ?? 'Mitglied';
 $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
+$appVersion = '2026';
+$appAuthor = 'Woody';
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -219,6 +221,13 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
             border-radius: 8px;
             font-size: 13px;
         }
+
+        .footer-note {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
     </style>
 </head>
 <body>
@@ -226,7 +235,7 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
         <div class="header">
             <h1>🔐 Nuki Lock Control</h1>
             <p>Schloss-Verwaltung für Pfadi-Abteilungen</p>
-            <p class="subtitle">MiData / Hitobito OAuth2</p>
+            <p class="subtitle">MiData OAuth2</p>
         </div>
 
         <?php if (!$isLoggedIn): ?>
@@ -285,6 +294,10 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
                 <a href="auth.php?action=logout">↪️ Logout</a>
             </div>
         <?php endif; ?>
+
+        <div class="footer-note">
+            Erstellt durch <?php echo e($appAuthor); ?> – <?php echo e($appVersion); ?>
+        </div>
     </div>
 
     <?php if ($isLoggedIn && $hasPermission): ?>
