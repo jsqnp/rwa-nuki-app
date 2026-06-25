@@ -7,6 +7,7 @@ $userName = $_SESSION['user_name'] ?? 'User';
 $userEmail = $_SESSION['user_email'] ?? '';
 $userRole = $_SESSION['user_role'] ?? 'Mitglied';
 $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
+$matchedRoles = getMatchedAccessRoles();
 $appVersion = '2026';
 $appAuthor = 'Woody';
 ?>
@@ -86,6 +87,16 @@ $appAuthor = 'Woody';
             font-weight: 600;
             display: inline-block;
             margin-top: 8px;
+        }
+
+        .matched-roles {
+            margin-top: 12px;
+            padding-left: 18px;
+            color: #555;
+        }
+
+        .matched-roles li {
+            margin: 4px 0;
         }
 
         .button-group {
@@ -256,6 +267,18 @@ $appAuthor = 'Woody';
                     <span class="badge">
                         ✓ <?php echo e($userRole); ?> in <?php echo e($userGroup); ?>
                     </span>
+
+                    <?php if (count($matchedRoles) > 1): ?>
+                        <ul class="matched-roles">
+                            <?php foreach ($matchedRoles as $matchedRole): ?>
+                                <li>
+                                    <?php echo e($matchedRole['role_name'] ?? 'Mitglied'); ?>
+                                    in
+                                    <?php echo e($matchedRole['group_name'] ?? 'Gruppe'); ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
 

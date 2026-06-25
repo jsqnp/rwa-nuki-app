@@ -91,6 +91,8 @@ function clearPermissionCache() {
         $_SESSION['user_group'],
         $_SESSION['matched_access_rule'],
         $_SESSION['matched_access_role'],
+        $_SESSION['matched_access_entries'],
+        $_SESSION['matched_access_roles'],
         $_SESSION['group_hierarchy_cache'],
         $_SESSION['last_hierarchy_debug']
     );
@@ -253,19 +255,20 @@ function roleMatchesGroupRule($role, $rule) {
     return in_array($targetGroupId, $hierarchyData['hierarchy_ids'] ?? [], true);
 }
 
-function getMatchingAccessEntry() {
+function getMatchingAccessEntries() {
     clearPermissionCache();
 
     if (!isLoggedIn()) {
-        return null;
+        return [];
     }
 
     $userInfo = $_SESSION['user_info'] ?? [];
     $roles = $userInfo['roles'] ?? [];
     $rules = getAccessRules();
+    $matches = [];
 
     if (empty($roles) || !is_array($roles) || empty($rules) || !is_array($rules)) {
-        return null;
+        return [];
     }
 
     foreach ($roles as $role) {
@@ -279,23 +282,41 @@ function getMatchingAccessEntry() {
                 continue;
             }
 
-            $_SESSION['user_role'] = $roleName !== '' ? $roleName : 'Mitglied';
-            $_SESSION['user_group'] = $role['group_name'] ?? 'Gruppe';
-            $_SESSION['matched_access_rule'] = $rule;
-            $_SESSION['matched_access_role'] = $role;
-
-            return [
+            $matches[] = [
                 'role' => $role,
                 'rule' => $rule,
             ];
         }
     }
 
-    return null;
+    if (!empty($matches)) {
+        $primaryMatch = $matches[0];
+        $_SESSION['user_role'] = ($primaryMatch['role']['role_name'] ?? '') !== '' ? $primaryMatch['role']['role_name'] : 'Mitglied';
+        $_SESSION['user_group'] = $primaryMatch['role']['group_name'] ?? 'Gruppe';
+        $_SESSION['matched_access_rule'] = $primaryMatch['rule'];
+        $_SESSION['matched_access_role'] = $primaryMatch['role'];
+        $_SESSION['matched_access_entries'] = $matches;
+        $_SESSION['matched_access_roles'] = array_map(function ($match) {
+            return [
+                'role_name' => $match['role']['role_name'] ?? 'Mitglied',
+                'group_name' => $match['role']['group_name'] ?? 'Gruppe',
+                'group_id' => $match['role']['group_id'] ?? null,
+                'rule_name' => $match['rule']['name'] ?? null,
+                'layer_group_id' => $match['rule']['layer_group_id'] ?? null,
+            ];
+        }, $matches);
+    }
+
+    return $matches;
+}
+
+function getMatchingAccessEntry() {
+    $matches = getMatchingAccessEntries();
+    return $matches[0] ?? null;
 }
 
 function isInAllowedGroup() {
-    return getMatchingAccessEntry() !== null;
+    return count(getMatchingAccessEntries()) > 0;
 }
 
 function hasPermission() {
@@ -306,9 +327,16 @@ function isDebugRolesEnabled() {
     return defined('DEBUG_ROLES_ENABLED') && DEBUG_ROLES_ENABLED;
 }
 
+function getMatchedAccessRoles() {
+    getMatchingAccessEntries();
+    $matchedRoles = $_SESSION['matched_access_roles'] ?? [];
+    return is_array($matchedRoles) ? $matchedRoles : [];
+}
+
 function getRoleDebugData() {
     $roles = $_SESSION['user_info']['roles'] ?? [];
     $hierarchyChecks = [];
+    $matches = getMatchingAccessEntries();
 
     if (is_array($roles)) {
         foreach ($roles as $role) {
@@ -321,10 +349,12 @@ function getRoleDebugData() {
 
     return [
         'logged_in' => isLoggedIn(),
-        'has_permission' => hasPermission(),
+        'has_permission' => count($matches) > 0,
         'access_rules' => getAccessRules(),
         'matched_access_rule' => $_SESSION['matched_access_rule'] ?? null,
         'matched_access_role' => $_SESSION['matched_access_role'] ?? null,
+        'matched_access_entries' => $matches,
+        'matched_access_roles' => getMatchedAccessRoles(),
         'last_hierarchy_debug' => $_SESSION['last_hierarchy_debug'] ?? null,
         'hierarchy_checks' => $hierarchyChecks,
         'roles' => is_array($roles) ? $roles : [],
