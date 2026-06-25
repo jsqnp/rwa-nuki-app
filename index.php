@@ -15,174 +15,228 @@ $appAuthor = 'Woody';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuki Lock Control</title>
+    <title>Chutze RWA</title>
     <style>
+        :root {
+            --bg: #f7f2eb;
+            --card: #ffffff;
+            --text: #2e2a26;
+            --muted: #7a6f66;
+            --line: #dfcdb8;
+            --primary: #c77f1a;
+            --primary-hover: #b06f13;
+            --primary-soft: #fbf2e7;
+            --success: #3b7f4a;
+            --success-soft: #edf7ef;
+            --error: #b2412d;
+            --error-soft: #fbeceb;
+            --info: #8a5a16;
+            --info-soft: #fcf4ea;
+            --warning: #9a5a00;
+            --warning-soft: #fff4e5;
+            --shadow: 0 10px 30px rgba(70, 40, 10, 0.08);
+            --radius-xl: 22px;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 999px;
+        }
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top, rgba(199, 127, 26, 0.08), transparent 35%),
+                var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding: 32px 16px;
         }
 
-        .container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
+        .page {
+            max-width: 820px;
+            margin: 0 auto;
         }
 
-        .header {
+        .title {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
-        .header h1 {
-            color: #333;
+        .title-icon {
+            width: 32px;
+            height: 32px;
+            color: var(--primary);
+            margin: 0 auto 10px auto;
+            display: block;
+        }
+
+        .title h1 {
+            font-size: 2.15rem;
+            line-height: 1.15;
+            font-weight: 800;
+            letter-spacing: -0.02em;
             margin-bottom: 8px;
-            font-size: 28px;
         }
 
-        .header p {
-            color: #666;
-            font-size: 14px;
+        .title p {
+            color: var(--muted);
+            font-size: 0.98rem;
         }
 
-        .user-info {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow);
+            padding: 18px;
         }
 
-        .user-info p {
-            margin: 8px 0;
-            color: #555;
+        .user-card {
+            background: #fffdfb;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .user-section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .section-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--primary);
+            flex: 0 0 auto;
+        }
+
+        .user-details {
+            display: grid;
+            gap: 14px;
+        }
+
+        .user-item-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 3px;
+        }
+
+        .user-item-value {
+            font-size: 1rem;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .user-email {
+            color: var(--muted);
         }
 
         .badge-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 10px;
+            margin-top: 18px;
         }
 
         .badge {
-            background: #4CAF50;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--success-soft);
+            border: 1px solid #bfd8c4;
+            color: var(--success);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            font-size: 0.86rem;
+            font-weight: 700;
         }
 
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin: 30px 0;
+        .badge svg {
+            width: 14px;
+            height: 14px;
+            flex: 0 0 auto;
         }
 
-        button {
-            flex: 1;
-            padding: 15px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
+        .badge.no-access {
+            background: var(--error-soft);
+            border-color: #efc5bd;
+            color: var(--error);
         }
 
-        .unlock-btn {
-            background: #4CAF50;
-            color: white;
+        .message {
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            border: 1px solid transparent;
+            font-size: 0.95rem;
+            line-height: 1.45;
+            margin-top: 14px;
         }
 
-        .unlock-btn:hover:not(:disabled) {
-            background: #45a049;
+        .message.info {
+            background: var(--info-soft);
+            border-color: #edd4b1;
+            color: var(--info);
         }
 
-        .lock-btn {
-            background: #f44336;
-            color: white;
+        .message.error {
+            background: var(--error-soft);
+            border-color: #efc5bd;
+            color: var(--error);
         }
 
-        .lock-btn:hover:not(:disabled) {
-            background: #da190b;
+        .message.success {
+            background: var(--success-soft);
+            border-color: #c7ddcb;
+            color: var(--success);
         }
 
-        .login-btn {
-            background: #667eea;
-            color: white;
-            width: 100%;
+        .message.warning {
+            background: var(--warning-soft);
+            border-color: #f0cf9c;
+            color: var(--warning);
         }
 
-        .login-btn:hover {
-            background: #5568d3;
-        }
-
-        .logout-link {
-            text-align: center;
+        .button-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
             margin-top: 20px;
         }
 
-        .logout-link a,
-        .debug-link {
-            color: #667eea;
+        button,
+        .button-link {
+            appearance: none;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 15px 18px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.18s ease;
             text-decoration: none;
-            font-size: 14px;
-        }
-
-        .logout-link a:hover,
-        .debug-link:hover {
-            text-decoration: underline;
-        }
-
-        .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
-            border-left: 4px solid #c62828;
-        }
-
-        .success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
-            border-left: 4px solid #2e7d32;
-        }
-
-        .info {
-            background: #e3f2fd;
-            color: #1565c0;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
-            border-left: 4px solid #1565c0;
-        }
-
-        .loading {
-            display: none;
             text-align: center;
-            color: #667eea;
-            font-weight: bold;
-            margin: 10px 0;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover:not(:disabled),
+        .button-link:hover {
+            transform: translateY(-1px);
         }
 
         button:disabled {
@@ -190,11 +244,57 @@ $appAuthor = 'Woody';
             cursor: not-allowed;
         }
 
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover:not(:disabled),
+        .btn-secondary:hover {
+            background: var(--primary-soft);
+        }
+
+        .btn-login {
+            width: 100%;
+            margin-top: 14px;
+        }
+
+        .btn-icon {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 auto;
+        }
+
+        .small-note {
+            text-align: center;
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 14px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
         .spinner {
             display: inline-block;
             width: 16px;
             height: 16px;
-            border: 2px solid #667eea;
+            border: 2px solid var(--primary);
             border-top: 2px solid transparent;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
@@ -206,104 +306,183 @@ $appAuthor = 'Woody';
             to { transform: rotate(360deg); }
         }
 
-        .small-note {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #777;
-            text-align: center;
-        }
-
         .debug-box {
             margin-top: 16px;
-            padding: 12px;
-            background: #fafafa;
-            border: 1px dashed #bbb;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 13px 14px;
+            background: #faf6f0;
+            border: 1px dashed #d4b893;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
         }
 
-        .footer-note {
-            margin-top: 24px;
+        .debug-box a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .debug-box a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
             text-align: center;
-            font-size: 12px;
-            color: #888;
+            color: #b5a89c;
+            font-size: 0.78rem;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 700px) {
+            .button-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .title h1 {
+                font-size: 1.8rem;
+            }
+
+            .card {
+                padding: 14px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🔐 Nuki Lock Control</h1>
-            <p>Schloss-Verwaltung für Pfadi-Abteilungen</p>
+    <div class="page">
+        <div class="title">
+            <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                <path d="M8 11V8a4 4 0 1 1 8 0v3"></path>
+            </svg>
+            <h1>Chutze RWA</h1>
+            <p>MiData Nuki Smart Lock Control</p>
         </div>
 
-        <?php if (!$isLoggedIn): ?>
-            <div class="info">
-                👋 Bitte melde dich mit deinem MiData-Account an.
-            </div>
+        <div class="card">
+            <?php if (!$isLoggedIn): ?>
+                <div class="message info">
+                    Bitte melde dich mit deinem MiData-Account an.
+                </div>
 
-            <a href="auth.php?action=login" style="text-decoration: none;">
-                <button class="login-btn">🔑 Mit MiData anmelden</button>
-            </a>
+                <a href="auth.php?action=login" style="text-decoration: none;">
+                    <button class="btn-primary btn-login">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <path d="M10 17l5-5-5-5"></path>
+                            <path d="M15 12H3"></path>
+                        </svg>
+                        <span>Mit MiData anmelden</span>
+                    </button>
+                </a>
 
-        <?php else: ?>
-            <div class="user-info">
-                <p><strong>👤 Benutzer:</strong> <?php echo e($userName); ?></p>
+            <?php else: ?>
+                <div class="user-card">
+                    <div class="user-section-title">
+                        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 21a8 8 0 0 0-16 0"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>Benutzer</span>
+                    </div>
 
-                <?php if ($userScoutName !== ''): ?>
-                    <p><strong>⚜️ Pfadiname:</strong> <?php echo e($userScoutName); ?></p>
-                <?php endif; ?>
+                    <div class="user-details">
+                        <?php if ($userScoutName !== ''): ?>
+                            <div>
+                                <div class="user-item-title">Pfadiname</div>
+                                <div class="user-item-value"><?php echo e($userScoutName); ?></div>
+                            </div>
+                        <?php endif; ?>
 
-                <p><strong>📧 Email:</strong> <?php echo e($userEmail); ?></p>
+                        <div>
+                            <div class="user-item-title">Benutzername</div>
+                            <div class="user-item-value"><?php echo e($userName); ?></div>
+                        </div>
 
-                <?php if ($hasPermission && !empty($matchedRoles)): ?>
-                    <div class="badge-list">
-                        <?php foreach ($matchedRoles as $matchedRole): ?>
-                            <span class="badge">
-                                ✓ <?php echo e($matchedRole['role_name'] ?? 'Mitglied'); ?> in <?php echo e($matchedRole['group_name'] ?? 'Gruppe'); ?>
-                            </span>
-                        <?php endforeach; ?>
+                        <div>
+                            <div class="user-item-title">E-Mail</div>
+                            <div class="user-item-value user-email"><?php echo e($userEmail); ?></div>
+                        </div>
+                    </div>
+
+                    <?php if ($hasPermission && !empty($matchedRoles)): ?>
+                        <div class="badge-list">
+                            <?php foreach ($matchedRoles as $matchedRole): ?>
+                                <span class="badge">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M20 6 9 17l-5-5"></path>
+                                    </svg>
+                                    <?php echo e($matchedRole['role_name'] ?? 'Mitglied'); ?> in <?php echo e($matchedRole['group_name'] ?? 'Gruppe'); ?>
+                                </span>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="badge-list">
+                            <span class="badge no-access">no-Access</span>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (!$hasPermission): ?>
+                    <div class="message error">
+                        Keine passende Rolle für die konfigurierte Abteilung gefunden.
+                    </div>
+                <?php else: ?>
+                    <div class="message info">
+                        Du kannst das Schloss vom Leitenden-Raum jetzt öffnen oder schliessen.
+                    </div>
+
+                    <div class="message warning">
+                        <strong>Hinweis:</strong> Verwende die App nur, wenn du persönlich vor Ort bist.
+                    </div>
+
+                    <div class="button-row">
+                        <button class="btn-primary" onclick="unlockDoor()">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                                <path d="M8 11V8a4 4 0 0 1 7.2-2.4"></path>
+                            </svg>
+                            <span>Öffnen</span>
+                        </button>
+
+                        <button class="btn-secondary" onclick="lockDoor()">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                                <path d="M8 11V8a4 4 0 1 1 8 0v3"></path>
+                            </svg>
+                            <span>Schliessen</span>
+                        </button>
+
+                        <a class="button-link btn-secondary" href="auth.php?action=logout">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <path d="M16 17l5-5-5-5"></path>
+                                <path d="M21 12H9"></path>
+                            </svg>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+
+                    <div id="message"></div>
+                    <div class="loading" id="loading">
+                        <span class="spinner"></span>Verarbeite...
+                    </div>
+
+                    <div class="small-note">
+                        Es wird kein Live-Status vom Schloss angezeigt.
                     </div>
                 <?php endif; ?>
-            </div>
 
-            <?php if (!$hasPermission): ?>
-                <div class="error">
-                    ⛔ <strong>Keine Berechtigung</strong><br>
-                    Keine passende Rolle für die konfigurierte Abteilung gefunden.
-                </div>
-            <?php else: ?>
-                <div class="info">
-                    Du kannst das Schloss jetzt öffnen oder schliessen.
-                </div>
-
-                <div class="button-group">
-                    <button class="unlock-btn" onclick="unlockDoor()">🔓 Öffnen</button>
-                    <button class="lock-btn" onclick="lockDoor()">🔒 Schliessen</button>
-                </div>
-
-                <div id="message"></div>
-                <div class="loading" id="loading">
-                    <span class="spinner"></span>Verarbeite...
-                </div>
-
-                <div class="small-note">
-                    Es wird kein Live-Status vom Schloss angezeigt.
-                </div>
+                <?php if (isDebugRolesEnabled()): ?>
+                    <div class="debug-box">
+                        Debug aktiv – <a href="debug-roles.php">Rollen-Debug öffnen</a>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
+        </div>
 
-            <?php if (isDebugRolesEnabled()): ?>
-                <div class="debug-box">
-                    🧪 Debug aktiv – <a class="debug-link" href="debug-roles.php">Rollen-Debug öffnen</a>
-                </div>
-            <?php endif; ?>
-
-            <div class="logout-link">
-                <a href="auth.php?action=logout">↪️ Logout</a>
-            </div>
-        <?php endif; ?>
-
-        <div class="footer-note">
+        <div class="footer">
             Erstellt durch <?php echo e($appAuthor); ?> – <?php echo e($appVersion); ?>
         </div>
     </div>
@@ -321,7 +500,7 @@ $appAuthor = 'Woody';
         function sendCommand(action, resultText) {
             const loading = document.getElementById('loading');
             const message = document.getElementById('message');
-            const buttons = document.querySelectorAll('.unlock-btn, .lock-btn');
+            const buttons = document.querySelectorAll('button');
 
             loading.style.display = 'block';
             message.innerHTML = '';
@@ -345,19 +524,19 @@ $appAuthor = 'Woody';
             })
             .then(data => {
                 if (data.success) {
-                    message.innerHTML = '<div class="success">✅ ' + escapeHtml(resultText) + '</div>';
+                    message.innerHTML = '<div class="message success">' + escapeHtml(resultText) + '</div>';
                     return;
                 }
 
                 if (data.error) {
-                    message.innerHTML = '<div class="error">❌ Fehler: ' + escapeHtml(data.error) + '</div>';
+                    message.innerHTML = '<div class="message error">Fehler: ' + escapeHtml(data.error) + '</div>';
                     return;
                 }
 
-                message.innerHTML = '<div class="error">❌ Unbekannte Antwort vom Server</div>';
+                message.innerHTML = '<div class="message error">Unbekannte Antwort vom Server</div>';
             })
             .catch(error => {
-                message.innerHTML = '<div class="error">❌ Fehler: ' + escapeHtml(error.message) + '</div>';
+                message.innerHTML = '<div class="message error">Fehler: ' + escapeHtml(error.message) + '</div>';
             })
             .finally(() => {
                 loading.style.display = 'none';
