@@ -9,14 +9,21 @@ define('HITOBITO_CLIENT_SECRET', 'DEIN_CLIENT_SECRET');
 define('HITOBITO_BASE_URL', 'https://pbs.puzzle.ch');
 define('REDIRECT_URI', 'https://rwa.chutze.ch/auth/midata');
 
-// Erlaubte Gruppe
-define('ALLOWED_GROUP_ID', 506); // Chutze Pfadi
-
 // Nuki
 define('NUKI_API_TOKEN', 'DEIN_NUKI_API_TOKEN');
 define('NUKI_LOCK_ID', 'DEINE_NUKI_LOCK_ID');
 
 session_start();
+
+function getAccessRules() {
+    return [
+        [
+            'group_id' => 506,
+            'allowed_roles' => [],
+            'include_subgroups' => false,
+        ],
+    ];
+}
 
 function redirect($url) {
     header('Location: ' . $url);
@@ -28,34 +35,96 @@ function isLoggedIn() {
 }
 
 function clearPermissionCache() {
-    unset($_SESSION['user_role'], $_SESSION['user_group']);
+    unset($_SESSION['user_role'], $_SESSION['user_group'], $_SESSION['matched_access_rule']);
 }
 
-function isInAllowedGroup() {
-    clearPermissionCache();
+function normalizeRoleName($roleName) {
+    return mb_strtolower(trim((string)$roleName));
+}
 
-    if (!isLoggedIn()) {
-        return false;
+function isRoleNameAllowed($roleName, $allowedRoles) {
+    if (empty($allowedRoles) || !is_array($allowedRoles)) {
+        return true;
     }
 
-    $userInfo = $_SESSION['user_info'] ?? [];
+    $normalizedRoleName = normalizeRoleName($roleName);
 
-    if (empty($userInfo['roles']) || !is_array($userInfo['roles'])) {
-        return false;
-    }
-
-    foreach ($userInfo['roles'] as $role) {
-        if (
-            isset($role['group_id']) &&
-            (int)$role['group_id'] === (int)ALLOWED_GROUP_ID
-        ) {
-            $_SESSION['user_role'] = $role['role_name'] ?? 'Mitglied';
-            $_SESSION['user_group'] = $role['group_name'] ?? 'Gruppe';
+    foreach ($allowedRoles as $allowedRole) {
+        if ($normalizedRoleName === normalizeRoleName($allowedRole)) {
             return true;
         }
     }
 
     return false;
+}
+
+function roleMatchesGroupRule($role, $rule) {
+    if (!is_array($role) || !is_array($rule)) {
+        return false;
+    }
+
+    $targetGroupId = isset($rule['group_id']) ? (int)$rule['group_id'] : 0;
+    if ($targetGroupId <= 0) {
+        return false;
+    }
+
+    $roleGroupId = isset($role['group_id']) ? (int)$role['group_id'] : 0;
+    $roleLayerGroupId = isset($role['layer_group_id']) ? (int)$role['layer_group_id'] : 0;
+    $includeSubgroups = !empty($rule['include_subgroups']);
+
+    if ($roleGroupId === $targetGroupId) {
+        return true;
+    }
+
+    if ($includeSubgroups && $roleLayerGroupId === $targetGroupId) {
+        return true;
+    }
+
+    return false;
+}
+
+function getMatchingAccessEntry() {
+    clearPermissionCache();
+
+    if (!isLoggedIn()) {
+        return null;
+    }
+
+    $userInfo = $_SESSION['user_info'] ?? [];
+    $roles = $userInfo['roles'] ?? [];
+    $rules = getAccessRules();
+
+    if (empty($roles) || !is_array($roles) || empty($rules) || !is_array($rules)) {
+        return null;
+    }
+
+    foreach ($roles as $role) {
+        foreach ($rules as $rule) {
+            if (!roleMatchesGroupRule($role, $rule)) {
+                continue;
+            }
+
+            $roleName = $role['role_name'] ?? '';
+            if (!isRoleNameAllowed($roleName, $rule['allowed_roles'] ?? [])) {
+                continue;
+            }
+
+            $_SESSION['user_role'] = $roleName !== '' ? $roleName : 'Mitglied';
+            $_SESSION['user_group'] = $role['group_name'] ?? 'Gruppe';
+            $_SESSION['matched_access_rule'] = $rule;
+
+            return [
+                'role' => $role,
+                'rule' => $rule,
+            ];
+        }
+    }
+
+    return null;
+}
+
+function isInAllowedGroup() {
+    return getMatchingAccessEntry() !== null;
 }
 
 function hasPermission() {
