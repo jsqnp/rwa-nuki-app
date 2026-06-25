@@ -13,7 +13,7 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RWA - Nuki Lock Control</title>
+    <title>Nuki Lock Control</title>
     <style>
         * {
             margin: 0;
@@ -224,18 +224,18 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 RWA Nuki Control</h1>
-            <p>Schloss-Verwaltung</p>
-            <p class="subtitle">Midata OAuth2 Integration</p>
+            <h1>🔐 Nuki Lock Control</h1>
+            <p>Schloss-Verwaltung für Pfadi-Abteilungen</p>
+            <p class="subtitle">MiData / Hitobito OAuth2</p>
         </div>
 
         <?php if (!$isLoggedIn): ?>
             <div class="info">
-                👋 Bitte melde dich mit deinem Midata-Account an.
+                👋 Bitte melde dich mit deinem MiData-Account an.
             </div>
 
             <a href="auth.php?action=login" style="text-decoration: none;">
-                <button class="login-btn">🔑 Mit Midata anmelden</button>
+                <button class="login-btn">🔑 Mit MiData anmelden</button>
             </a>
 
         <?php else: ?>
@@ -253,7 +253,7 @@ $userGroup = $_SESSION['user_group'] ?? 'Gruppe';
             <?php if (!$hasPermission): ?>
                 <div class="error">
                     ⛔ <strong>Keine Berechtigung</strong><br>
-                    Keine passende Rolle für die konfigurierte Layer-Regel gefunden.
+                    Keine passende Rolle für die konfigurierte Abteilung gefunden.
                 </div>
             <?php else: ?>
                 <div class="info">

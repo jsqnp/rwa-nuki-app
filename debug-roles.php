@@ -58,7 +58,7 @@ $debugData = getRoleDebugData();
 <body>
     <div class="box">
         <h1>Rollen-Debug</h1>
-        <p>Diese Seite zeigt die gelieferten Midata-/Hitobito-Rollen, die gematchte Zugriffsregel und die geladene Gruppenhierarchie.</p>
+        <p>Diese Seite zeigt die gelieferten MiData-/Hitobito-Rollen, die gematchte Zugriffsregel und die geladene Gruppenhierarchie.</p>
         <p><a href="index.php">← Zurück zur Startseite</a></p>
     </div>
 

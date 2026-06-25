@@ -3,26 +3,48 @@
 // RWA NUKI CONTROL - KONFIGURATION
 // =====================================================================
 
+// ---------------------------------------------------------------------
 // Midata / Hitobito OAuth2
-define('HITOBITO_CLIENT_ID', 'DEIN_CLIENT_ID');
-define('HITOBITO_CLIENT_SECRET', 'DEIN_CLIENT_SECRET');
+// ---------------------------------------------------------------------
+define('HITOBITO_CLIENT_ID', 'YOUR_HITOBITO_CLIENT_ID');
+define('HITOBITO_CLIENT_SECRET', 'YOUR_HITOBITO_CLIENT_SECRET');
 define('HITOBITO_BASE_URL', 'https://pbs.puzzle.ch');
-define('REDIRECT_URI', 'https://rwa.chutze.ch/auth/midata');
+define('REDIRECT_URI', 'https://example.org/auth/midata');
 define('HITOBITO_DEFAULT_LANGUAGE', 'de');
 
-// Nuki
-define('NUKI_API_TOKEN', 'DEIN_NUKI_API_TOKEN');
-define('NUKI_LOCK_ID', 'DEINE_NUKI_LOCK_ID');
+// ---------------------------------------------------------------------
+// Nuki Web API
+// ---------------------------------------------------------------------
+define('NUKI_API_TOKEN', 'YOUR_NUKI_API_TOKEN');
+define('NUKI_LOCK_ID', 'YOUR_NUKI_LOCK_ID');
 
-// Debug-Ausgabe für Rollen aktivieren/deaktivieren
-define('DEBUG_ROLES_ENABLED', true);
+// ---------------------------------------------------------------------
+// Debug
+// Setze für den Normalbetrieb auf false.
+// ---------------------------------------------------------------------
+define('DEBUG_ROLES_ENABLED', false);
 
 session_start();
 
+/**
+ * Lesbare Zugriffskonfiguration.
+ *
+ * Ziel:
+ * - Eine Pfadi-Abteilung trägt ihre Layer-/Abteilungs-ID ein.
+ * - optional können erlaubte Rollen angepasst werden.
+ * - optional können Untergruppen deaktiviert werden.
+ *
+ * Hinweise:
+ * - layer_group_id: ID der Abteilung / des Layers in Hitobito / MiData
+ * - allowed_roles: leeres Array = alle Rollen innerhalb der passenden Gruppe erlauben
+ * - include_subgroups: true = Rollen in Untergruppen der Abteilung ebenfalls erlauben
+ */
 function getAccessRules() {
     return [
         [
-            'layer_group_id' => 375,
+            'name' => 'Example Pfadi Abteilung',
+            'layer_group_id' => 12345,
+            'include_subgroups' => true,
             'allowed_roles' => [
                 'Einheitsleiter*in',
                 'Mitleiter*in',
@@ -46,7 +68,6 @@ function getAccessRules() {
                 'Kassier*in',
                 'Rechnungen',
             ],
-            'include_subgroups' => true,
         ],
     ];
 }

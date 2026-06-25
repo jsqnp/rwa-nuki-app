@@ -1,17 +1,32 @@
 # RWA Nuki Control
 
-Eine kleine PHP-Webanwendung für:
+Eine kleine PHP-Webanwendung für Pfadi-Abteilungen, die ein Nuki-Schloss über MiData / Hitobito absichern möchten.
 
-- Midata / Hitobito OAuth2 Login
-- Berechtigungsprüfung über eine Midata-Gruppe
-- Nuki Smart Lock öffnen und schliessen
+Die App erlaubt:
+
+- Login über MiData / Hitobito OAuth2
+- Berechtigungsprüfung über Rollen in einer konfigurierten Pfadi-Abteilung
+- Prüfung von Untergruppen über die echte Hitobito-Gruppenhierarchie
+- Öffnen und Schliessen eines Nuki Smart Locks
+
+## Ziel
+
+Diese App soll von einer beliebigen Pfadi-Abteilung verwendet werden können.
+
+Dazu müssen nur folgende Dinge angepasst werden:
+
+- OAuth Client ID und Client Secret
+- Nuki API Token und Lock ID
+- die eigene `layer_group_id` der Abteilung
+- optional die erlaubten Rollen
 
 ## Funktionen
 
-- Login über Midata / Hitobito OAuth2
-- Zugriff nur für Mitglieder der Gruppe `Chutze Pfadi` (`group_id = 506`)
-- Nuki-Schloss per Weboberfläche öffnen
-- Nuki-Schloss per Weboberfläche schliessen
+- Login über MiData / Hitobito OAuth2
+- Rollenprüfung via `with_roles`
+- Hierarchieprüfung via `groups`
+- Unterstützung für Untergruppen einer Abteilung
+- Einfache Weboberfläche für `Öffnen` und `Schliessen`
 - Kein Live-Status des Schlosses, um API-Inkompatibilitäten im Shared-Hosting-Setup zu vermeiden
 
 ## Projektstruktur
@@ -22,6 +37,7 @@ Eine kleine PHP-Webanwendung für:
 ├── index.php
 ├── auth.php
 ├── lock-control.php
+├── debug-roles.php
 └── auth/
     └── midata/
         └── index.php
@@ -30,53 +46,91 @@ Eine kleine PHP-Webanwendung für:
 ## Voraussetzungen
 
 - PHP mit aktivierter cURL-Erweiterung
-- Ein Midata / Hitobito OAuth2 Client
+- Ein MiData / Hitobito OAuth2 Client
 - Ein Nuki Web API Token
 - Eine Nuki Smart Lock ID
 - Webserver / Hosting mit PHP-Unterstützung
 
 ## Konfiguration
 
-In `config.php` folgende Platzhalter ersetzen:
+In `config.php` die Platzhalter ersetzen:
 
-- `DEIN_CLIENT_ID`
-- `DEIN_CLIENT_SECRET`
-- `DEIN_NUKI_API_TOKEN`
-- `DEINE_NUKI_LOCK_ID`
+- `YOUR_HITOBITO_CLIENT_ID`
+- `YOUR_HITOBITO_CLIENT_SECRET`
+- `YOUR_NUKI_API_TOKEN`
+- `YOUR_NUKI_LOCK_ID`
+- `REDIRECT_URI` auf die eigene URL anpassen
 
-Zusätzlich prüfen:
+### Beispiel für die Zugriffskonfiguration
 
-- `REDIRECT_URI` muss exakt mit der bei Midata / Hitobito hinterlegten Redirect-URI übereinstimmen
-- In diesem Projekt ist absichtlich **kein abschliessender Slash** enthalten:
-  - `https://rwa.chutze.ch/auth/midata`
+```php
+function getAccessRules() {
+    return [
+        [
+            'name' => 'Meine Pfadi Abteilung',
+            'layer_group_id' => 12345,
+            'include_subgroups' => true,
+            'allowed_roles' => [
+                'Einheitsleiter*in',
+                'Mitleiter*in',
+                'Adressverwalter*in',
+                'Abteilungsleiter*in',
+                'Abteilungsleiter*in Stv',
+                'Sekretariat',
+                'PowerUser',
+            ],
+        ],
+    ];
+}
+```
 
-## Berechtigung
+### Bedeutung der Felder
 
-Der Zugriff wird anhand der Midata-Rollen geprüft.
-Zugelassen ist aktuell nur:
+- `name`: frei wählbarer Anzeigename für die Regel
+- `layer_group_id`: ID der Abteilung / des Layers in MiData / Hitobito
+- `include_subgroups`: wenn `true`, zählen auch Rollen in Untergruppen
+- `allowed_roles`: erlaubte Rollennamen; ein leeres Array erlaubt alle Rollen in der passenden Gruppe
 
-- `ALLOWED_GROUP_ID = 506`
+## Wie die Berechtigung funktioniert
 
-Das entspricht der Gruppe:
-
-- `Chutze Pfadi`
+1. Der Benutzer meldet sich via MiData an.
+2. Die App liest die Rollen über `/oauth/profile` mit Scope `with_roles`.
+3. Für jede Rollen-Gruppe lädt die App zusätzlich `/groups/{id}.json` mit Scope `groups`.
+4. Über `links.hierarchies` wird geprüft, ob die Rolle zur konfigurierten Abteilung oder zu einer Untergruppe davon gehört.
+5. Nur wenn Gruppe **und** Rolle passen, darf das Schloss bedient werden.
 
 ## Deployment
 
-Dateien auf den Webserver hochladen, z. B. so:
+Die Dateien können direkt auf einen PHP-Webserver hochgeladen werden.
+
+Mindestens benötigt:
 
 ```text
 config.php
 index.php
 auth.php
 lock-control.php
+debug-roles.php
 auth/midata/index.php
 ```
 
+## Debug
+
+Für Tests gibt es die Datei `debug-roles.php`.
+
+Standardmässig ist Debug deaktiviert:
+
+```php
+define('DEBUG_ROLES_ENABLED', false);
+```
+
+Zum Troubleshooting kann es temporär aktiviert werden. Danach sollte es wieder deaktiviert werden.
+
 ## Sicherheitshinweis
 
-Dieses Repository enthält **keine echten Secrets**.
-Bitte niemals produktive Tokens oder OAuth-Secrets direkt in ein öffentliches Repository committen.
+Dieses Repository enthält keine echten Secrets.
+
+Bitte niemals produktive Tokens, OAuth-Secrets oder echte Gruppen-IDs in ein öffentliches Repository committen.
 
 ## Lizenz
 
