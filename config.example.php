@@ -80,7 +80,6 @@ function clearPermissionCache() {
         $_SESSION['matched_access_role'],
         $_SESSION['matched_access_entries'],
         $_SESSION['matched_access_roles'],
-        $_SESSION['group_hierarchy_cache'],
         $_SESSION['last_hierarchy_debug']
     );
 }
@@ -243,14 +242,11 @@ function roleMatchesGroupRule($role, $rule) {
 }
 
 function getMatchingAccessEntries() {
-    if (isset($_SESSION['matched_access_entries']) && is_array($_SESSION['matched_access_entries'])) {
-        return $_SESSION['matched_access_entries'];
-    }
-
     clearPermissionCache();
 
     if (!isLoggedIn()) {
         $_SESSION['matched_access_entries'] = [];
+        $_SESSION['matched_access_roles'] = [];
         return [];
     }
 
@@ -323,12 +319,7 @@ function isDebugRolesEnabled() {
 }
 
 function getMatchedAccessRoles() {
-    $matchedRoles = $_SESSION['matched_access_roles'] ?? null;
-    if (!is_array($matchedRoles)) {
-        getMatchingAccessEntries();
-        $matchedRoles = $_SESSION['matched_access_roles'] ?? [];
-    }
-
+    $matchedRoles = $_SESSION['matched_access_roles'] ?? [];
     return is_array($matchedRoles) ? $matchedRoles : [];
 }
 
