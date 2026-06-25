@@ -8,6 +8,7 @@ define('HITOBITO_CLIENT_ID', 'DEIN_CLIENT_ID');
 define('HITOBITO_CLIENT_SECRET', 'DEIN_CLIENT_SECRET');
 define('HITOBITO_BASE_URL', 'https://pbs.puzzle.ch');
 define('REDIRECT_URI', 'https://rwa.chutze.ch/auth/midata');
+define('HITOBITO_DEFAULT_LANGUAGE', 'de');
 
 // Nuki
 define('NUKI_API_TOKEN', 'DEIN_NUKI_API_TOKEN');
@@ -21,7 +22,7 @@ session_start();
 function getAccessRules() {
     return [
         [
-            'group_id' => 375,
+            'layer_group_id' => 375,
             'allowed_roles' => [
                 'Einheitsleiter*in',
                 'Mitleiter*in',
@@ -64,7 +65,9 @@ function clearPermissionCache() {
         $_SESSION['user_role'],
         $_SESSION['user_group'],
         $_SESSION['matched_access_rule'],
-        $_SESSION['matched_access_role']
+        $_SESSION['matched_access_role'],
+        $_SESSION['group_hierarchy_cache'],
+        $_SESSION['last_hierarchy_debug']
     );
 }
 
@@ -88,29 +91,142 @@ function isRoleNameAllowed($roleName, $allowedRoles) {
     return false;
 }
 
+function getHitobitoLanguage() {
+    $allowedLanguages = ['de', 'fr', 'it'];
+    $language = $_SESSION['user_info']['correspondence_language'] ?? HITOBITO_DEFAULT_LANGUAGE;
+    $language = mb_strtolower(trim((string)$language));
+
+    if (!in_array($language, $allowedLanguages, true)) {
+        return HITOBITO_DEFAULT_LANGUAGE;
+    }
+
+    return $language;
+}
+
+function getGroupHierarchyCache() {
+    if (!isset($_SESSION['group_hierarchy_cache']) || !is_array($_SESSION['group_hierarchy_cache'])) {
+        $_SESSION['group_hierarchy_cache'] = [];
+    }
+
+    return $_SESSION['group_hierarchy_cache'];
+}
+
+function setGroupHierarchyCacheEntry($groupId, $data) {
+    $cache = getGroupHierarchyCache();
+    $cache[(string)$groupId] = $data;
+    $_SESSION['group_hierarchy_cache'] = $cache;
+}
+
+function getGroupHierarchyData($groupId) {
+    $groupId = (int)$groupId;
+    if ($groupId <= 0) {
+        return [
+            'success' => false,
+            'error' => 'Ungültige Gruppen-ID',
+            'group_id' => $groupId,
+        ];
+    }
+
+    $cache = getGroupHierarchyCache();
+    if (isset($cache[(string)$groupId])) {
+        return $cache[(string)$groupId];
+    }
+
+    $accessToken = $_SESSION['access_token'] ?? '';
+    if ($accessToken === '') {
+        $result = [
+            'success' => false,
+            'error' => 'Kein Access Token vorhanden',
+            'group_id' => $groupId,
+        ];
+        setGroupHierarchyCacheEntry($groupId, $result);
+        return $result;
+    }
+
+    $language = getHitobitoLanguage();
+    $url = HITOBITO_BASE_URL . '/' . $language . '/groups/' . $groupId . '.json';
+    $headers = [
+        'Authorization: Bearer ' . $accessToken,
+        'Accept: application/json',
+        'X-Scope: with_roles',
+        'X-Scope: groups',
+    ];
+
+    $response = getJSON($url, $headers);
+
+    $hierarchyIds = [];
+    if (!empty($response['success']) && isset($response['groups']) && is_array($response['groups']) && count($response['groups']) === 1) {
+        $groupDetails = $response['groups'][0];
+        if (isset($groupDetails['links']['hierarchies']) && is_array($groupDetails['links']['hierarchies'])) {
+            foreach ($groupDetails['links']['hierarchies'] as $hierarchyGroupId) {
+                $parsedId = (int)$hierarchyGroupId;
+                if ($parsedId > 0) {
+                    $hierarchyIds[] = $parsedId;
+                }
+            }
+        }
+    }
+
+    $hierarchyIds = array_values(array_unique($hierarchyIds));
+    rsort($hierarchyIds);
+
+    $result = [
+        'success' => !empty($response['success']),
+        'group_id' => $groupId,
+        'url' => $url,
+        'language' => $language,
+        'http_code' => $response['http_code'] ?? null,
+        'hierarchy_ids' => $hierarchyIds,
+        'raw' => $response,
+    ];
+
+    if (empty($response['success'])) {
+        $result['error'] = $response['error'] ?? 'Hierarchie konnte nicht geladen werden';
+    }
+
+    setGroupHierarchyCacheEntry($groupId, $result);
+    return $result;
+}
+
 function roleMatchesGroupRule($role, $rule) {
     if (!is_array($role) || !is_array($rule)) {
         return false;
     }
 
-    $targetGroupId = isset($rule['group_id']) ? (int)$rule['group_id'] : 0;
+    $targetGroupId = isset($rule['layer_group_id']) ? (int)$rule['layer_group_id'] : 0;
     if ($targetGroupId <= 0) {
         return false;
     }
 
     $roleGroupId = isset($role['group_id']) ? (int)$role['group_id'] : 0;
-    $roleLayerGroupId = isset($role['layer_group_id']) ? (int)$role['layer_group_id'] : 0;
     $includeSubgroups = !empty($rule['include_subgroups']);
 
     if ($roleGroupId === $targetGroupId) {
+        $_SESSION['last_hierarchy_debug'] = [
+            'match_type' => 'direct_group_match',
+            'target_group_id' => $targetGroupId,
+            'role_group_id' => $roleGroupId,
+        ];
         return true;
     }
 
-    if ($includeSubgroups && $roleLayerGroupId === $targetGroupId) {
-        return true;
+    if (!$includeSubgroups || $roleGroupId <= 0) {
+        $_SESSION['last_hierarchy_debug'] = [
+            'match_type' => 'no_subgroup_check',
+            'target_group_id' => $targetGroupId,
+            'role_group_id' => $roleGroupId,
+        ];
+        return false;
     }
 
-    return false;
+    $hierarchyData = getGroupHierarchyData($roleGroupId);
+    $_SESSION['last_hierarchy_debug'] = $hierarchyData;
+
+    if (empty($hierarchyData['success'])) {
+        return false;
+    }
+
+    return in_array($targetGroupId, $hierarchyData['hierarchy_ids'] ?? [], true);
 }
 
 function getMatchingAccessEntry() {
@@ -168,6 +284,16 @@ function isDebugRolesEnabled() {
 
 function getRoleDebugData() {
     $roles = $_SESSION['user_info']['roles'] ?? [];
+    $hierarchyChecks = [];
+
+    if (is_array($roles)) {
+        foreach ($roles as $role) {
+            $groupId = isset($role['group_id']) ? (int)$role['group_id'] : 0;
+            if ($groupId > 0) {
+                $hierarchyChecks[(string)$groupId] = getGroupHierarchyData($groupId);
+            }
+        }
+    }
 
     return [
         'logged_in' => isLoggedIn(),
@@ -175,6 +301,8 @@ function getRoleDebugData() {
         'access_rules' => getAccessRules(),
         'matched_access_rule' => $_SESSION['matched_access_rule'] ?? null,
         'matched_access_role' => $_SESSION['matched_access_role'] ?? null,
+        'last_hierarchy_debug' => $_SESSION['last_hierarchy_debug'] ?? null,
+        'hierarchy_checks' => $hierarchyChecks,
         'roles' => is_array($roles) ? $roles : [],
     ];
 }

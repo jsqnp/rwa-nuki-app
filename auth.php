@@ -11,7 +11,7 @@ if ($action === 'login') {
         'client_id' => HITOBITO_CLIENT_ID,
         'redirect_uri' => REDIRECT_URI,
         'response_type' => 'code',
-        'scope' => 'with_roles',
+        'scope' => 'with_roles groups',
         'state' => $state
     ];
 
