@@ -7,15 +7,17 @@ $userName = $_SESSION['user_name'] ?? 'User';
 $userEmail = $_SESSION['user_email'] ?? '';
 $userScoutName = trim((string)($_SESSION['user_info']['nickname'] ?? $_SESSION['user_info']['scout_name'] ?? ''));
 $matchedRoles = getMatchedAccessRoles();
-$appVersion = '2026';
-$appAuthor = 'Woody';
+$appVersion = defined('APP_VERSION') ? APP_VERSION : '2026';
+$appAuthor = defined('APP_AUTHOR') ? APP_AUTHOR : 'Woody';
+$appName = defined('APP_NAME') ? APP_NAME : 'Chutze RWA';
+$appSubtitle = defined('APP_SUBTITLE') ? APP_SUBTITLE : 'MiData Nuki Smart Lock Control';
 ?>
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chutze RWA</title>
+    <title><?php echo e($appName); ?></title>
     <style>
         :root {
             --bg: #f7f2eb;
@@ -356,14 +358,14 @@ $appAuthor = 'Woody';
                 <rect x="5" y="11" width="14" height="10" rx="2"></rect>
                 <path d="M8 11V8a4 4 0 1 1 8 0v3"></path>
             </svg>
-            <h1>Chutze RWA</h1>
-            <p>MiData Nuki Smart Lock Control</p>
+            <h1><?php echo e($appName); ?></h1>
+            <p><?php echo e($appSubtitle); ?></p>
         </div>
 
         <div class="card">
             <?php if (!$isLoggedIn): ?>
                 <div class="message info">
-                    Bitte melde dich mit deinem MiData-Account an.
+                    <?php echo e(defined('APP_LOGIN_TEXT') ? APP_LOGIN_TEXT : 'Bitte melde dich mit deinem MiData-Account an.'); ?>
                 </div>
 
                 <a href="auth.php?action=login" style="text-decoration: none;">
@@ -373,7 +375,7 @@ $appAuthor = 'Woody';
                             <path d="M10 17l5-5-5-5"></path>
                             <path d="M15 12H3"></path>
                         </svg>
-                        <span>Mit MiData anmelden</span>
+                        <span><?php echo e(defined('APP_LOGIN_BUTTON_TEXT') ? APP_LOGIN_BUTTON_TEXT : 'Mit MiData anmelden'); ?></span>
                     </button>
                 </a>
 
@@ -384,24 +386,24 @@ $appAuthor = 'Woody';
                             <path d="M20 21a8 8 0 0 0-16 0"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                        <span>Benutzer</span>
+                        <span><?php echo e(defined('APP_USER_SECTION_TITLE') ? APP_USER_SECTION_TITLE : 'Benutzer'); ?></span>
                     </div>
 
                     <div class="user-details">
                         <?php if ($userScoutName !== ''): ?>
                             <div>
-                                <div class="user-item-title">Pfadiname</div>
+                                <div class="user-item-title"><?php echo e(defined('APP_SCOUT_NAME_LABEL') ? APP_SCOUT_NAME_LABEL : 'Pfadiname'); ?></div>
                                 <div class="user-item-value"><?php echo e($userScoutName); ?></div>
                             </div>
                         <?php endif; ?>
 
                         <div>
-                            <div class="user-item-title">Benutzername</div>
+                            <div class="user-item-title"><?php echo e(defined('APP_USERNAME_LABEL') ? APP_USERNAME_LABEL : 'Benutzername'); ?></div>
                             <div class="user-item-value"><?php echo e($userName); ?></div>
                         </div>
 
                         <div>
-                            <div class="user-item-title">E-Mail</div>
+                            <div class="user-item-title"><?php echo e(defined('APP_EMAIL_LABEL') ? APP_EMAIL_LABEL : 'E-Mail'); ?></div>
                             <div class="user-item-value user-email"><?php echo e($userEmail); ?></div>
                         </div>
                     </div>
@@ -419,22 +421,22 @@ $appAuthor = 'Woody';
                         </div>
                     <?php else: ?>
                         <div class="badge-list">
-                            <span class="badge no-access">no-Access</span>
+                            <span class="badge no-access"><?php echo e(defined('APP_NO_ACCESS_BADGE') ? APP_NO_ACCESS_BADGE : 'no-Access'); ?></span>
                         </div>
                     <?php endif; ?>
                 </div>
 
                 <?php if (!$hasPermission): ?>
                     <div class="message error">
-                        Keine passende Rolle für die konfigurierte Abteilung gefunden.
+                        <?php echo e(defined('APP_NO_ACCESS_TEXT') ? APP_NO_ACCESS_TEXT : 'Keine passende Rolle für die konfigurierte Abteilung gefunden.'); ?>
                     </div>
                 <?php else: ?>
                     <div class="message info">
-                        Du kannst das Schloss vom Leitenden-Raum jetzt öffnen oder schliessen.
+                        <?php echo e(defined('APP_ACCESS_TEXT') ? APP_ACCESS_TEXT : 'Du kannst das Schloss vom Leitenden-Raum jetzt öffnen oder schliessen.'); ?>
                     </div>
 
                     <div class="message warning">
-                        <strong>Hinweis:</strong> Verwende die App nur, wenn du persönlich vor Ort bist.
+                        <?php echo e(defined('APP_WARNING_TEXT') ? APP_WARNING_TEXT : 'Hinweis: Verwende die App nur, wenn du persönlich vor Ort bist.'); ?>
                     </div>
 
                     <div class="button-row">
@@ -443,7 +445,7 @@ $appAuthor = 'Woody';
                                 <rect x="5" y="11" width="14" height="10" rx="2"></rect>
                                 <path d="M8 11V8a4 4 0 0 1 7.2-2.4"></path>
                             </svg>
-                            <span>Öffnen</span>
+                            <span><?php echo e(defined('APP_UNLOCK_BUTTON_TEXT') ? APP_UNLOCK_BUTTON_TEXT : 'Öffnen'); ?></span>
                         </button>
 
                         <button class="btn-secondary" onclick="lockDoor()">
@@ -451,7 +453,7 @@ $appAuthor = 'Woody';
                                 <rect x="5" y="11" width="14" height="10" rx="2"></rect>
                                 <path d="M8 11V8a4 4 0 1 1 8 0v3"></path>
                             </svg>
-                            <span>Schliessen</span>
+                            <span><?php echo e(defined('APP_LOCK_BUTTON_TEXT') ? APP_LOCK_BUTTON_TEXT : 'Schliessen'); ?></span>
                         </button>
 
                         <a class="button-link btn-secondary" href="auth.php?action=logout">
@@ -460,7 +462,7 @@ $appAuthor = 'Woody';
                                 <path d="M16 17l5-5-5-5"></path>
                                 <path d="M21 12H9"></path>
                             </svg>
-                            <span>Logout</span>
+                            <span><?php echo e(defined('APP_LOGOUT_BUTTON_TEXT') ? APP_LOGOUT_BUTTON_TEXT : 'Logout'); ?></span>
                         </a>
                     </div>
 
@@ -470,13 +472,13 @@ $appAuthor = 'Woody';
                     </div>
 
                     <div class="small-note">
-                        Es wird kein Live-Status vom Schloss angezeigt.
+                        <?php echo e(defined('APP_STATUS_NOTE') ? APP_STATUS_NOTE : 'Es wird kein Live-Status vom Schloss angezeigt.'); ?>
                     </div>
                 <?php endif; ?>
 
                 <?php if (isDebugRolesEnabled()): ?>
                     <div class="debug-box">
-                        Debug aktiv – <a href="debug-roles.php">Rollen-Debug öffnen</a>
+                        <?php echo e(defined('APP_DEBUG_TEXT') ? APP_DEBUG_TEXT : 'Debug aktiv'); ?> – <a href="debug-roles.php"><?php echo e(defined('APP_DEBUG_LINK_TEXT') ? APP_DEBUG_LINK_TEXT : 'Rollen-Debug öffnen'); ?></a>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
@@ -490,11 +492,11 @@ $appAuthor = 'Woody';
     <?php if ($isLoggedIn && $hasPermission): ?>
     <script>
         function unlockDoor() {
-            sendCommand('unlock', 'Öffnen ausgelöst');
+            sendCommand('unlock', <?php echo json_encode(defined('APP_UNLOCK_BUTTON_TEXT') ? APP_UNLOCK_BUTTON_TEXT . ' ausgelöst' : 'Öffnen ausgelöst'); ?>);
         }
 
         function lockDoor() {
-            sendCommand('lock', 'Schliessen ausgelöst');
+            sendCommand('lock', <?php echo json_encode(defined('APP_LOCK_BUTTON_TEXT') ? APP_LOCK_BUTTON_TEXT . ' ausgelöst' : 'Schliessen ausgelöst'); ?>);
         }
 
         function sendCommand(action, resultText) {
