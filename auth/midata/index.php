@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config.php';
+require_once 'app.php';
 
 $code = $_GET['code'] ?? '';
 $state = $_GET['state'] ?? '';
