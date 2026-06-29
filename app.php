@@ -7,6 +7,98 @@ function getAccessRules() {
     return defined('ACCESS_RULES') && is_array(ACCESS_RULES) ? ACCESS_RULES : [];
 }
 
+function getGroupHierarchyCacheTtlSeconds() {
+    return 7 * 24 * 60 * 60;
+}
+
+function getGroupHierarchyCacheDirectory() {
+    return __DIR__ . '/cache';
+}
+
+function getGroupHierarchyCacheFilePath() {
+    return getGroupHierarchyCacheDirectory() . '/group-hierarchy-cache.json';
+}
+
+function ensureGroupHierarchyCacheDirectoryExists() {
+    $directory = getGroupHierarchyCacheDirectory();
+    if (is_dir($directory)) {
+        return true;
+    }
+
+    return @mkdir($directory, 0775, true);
+}
+
+function getPersistentGroupHierarchyCache() {
+    $filePath = getGroupHierarchyCacheFilePath();
+
+    if (!is_file($filePath)) {
+        return [];
+    }
+
+    $raw = @file_get_contents($filePath);
+    if ($raw === false || $raw === '') {
+        return [];
+    }
+
+    $decoded = json_decode($raw, true);
+    return is_array($decoded) ? $decoded : [];
+}
+
+function savePersistentGroupHierarchyCache($cache) {
+    if (!is_array($cache)) {
+        return false;
+    }
+
+    if (!ensureGroupHierarchyCacheDirectoryExists()) {
+        return false;
+    }
+
+    $filePath = getGroupHierarchyCacheFilePath();
+    $payload = json_encode($cache, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($payload === false) {
+        return false;
+    }
+
+    return @file_put_contents($filePath, $payload, LOCK_EX) !== false;
+}
+
+function getPersistentGroupHierarchyCacheEntry($groupId) {
+    $groupId = (int)$groupId;
+    if ($groupId <= 0) {
+        return null;
+    }
+
+    $cache = getPersistentGroupHierarchyCache();
+    $entry = $cache[(string)$groupId] ?? null;
+    if (!is_array($entry)) {
+        return null;
+    }
+
+    $cachedAt = isset($entry['cached_at']) ? (int)$entry['cached_at'] : 0;
+    if ($cachedAt <= 0) {
+        return null;
+    }
+
+    if ((time() - $cachedAt) > getGroupHierarchyCacheTtlSeconds()) {
+        return null;
+    }
+
+    return $entry;
+}
+
+function setPersistentGroupHierarchyCacheEntry($groupId, $data) {
+    $groupId = (int)$groupId;
+    if ($groupId <= 0 || !is_array($data)) {
+        return false;
+    }
+
+    $cache = getPersistentGroupHierarchyCache();
+    $data['cached_at'] = time();
+    $cache[(string)$groupId] = $data;
+
+    return savePersistentGroupHierarchyCache($cache);
+}
+
 function redirect($url) {
     header('Location: ' . $url);
     exit;
@@ -90,6 +182,12 @@ function getGroupHierarchyData($groupId) {
         return $cache[(string)$groupId];
     }
 
+    $persistentEntry = getPersistentGroupHierarchyCacheEntry($groupId);
+    if (is_array($persistentEntry)) {
+        setGroupHierarchyCacheEntry($groupId, $persistentEntry);
+        return $persistentEntry;
+    }
+
     $accessToken = $_SESSION['access_token'] ?? '';
     if ($accessToken === '') {
         $result = [
@@ -142,6 +240,7 @@ function getGroupHierarchyData($groupId) {
     }
 
     setGroupHierarchyCacheEntry($groupId, $result);
+    setPersistentGroupHierarchyCacheEntry($groupId, $result);
     return $result;
 }
 
